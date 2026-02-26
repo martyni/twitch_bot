@@ -1,0 +1,11 @@
+# OAuth tokens – keep private, never commit
+.tio.tokens.json
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.env
+venv/
+.venv/
