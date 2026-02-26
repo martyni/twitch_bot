@@ -12,7 +12,7 @@ from twitchio import eventsub
 from twitchio.authentication import UserTokenPayload
 from twitchio.ext import commands
 
-logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(name)s: %(message)s")
+logging.basicConfig(level=logging.DEBUG, format="%(asctime)s [%(levelname)s] %(name)s: %(message)s")
 LOGGER: logging.Logger = logging.getLogger("TwitchBot")
 
 
@@ -35,16 +35,36 @@ class Bot(commands.Bot):
             user_id=self.bot_id,
         )
         await self.subscribe_websocket(payload=payload)
+        await self.add_component(GeneralCommands())
         LOGGER.info("Subscribed to chat messages in channel %s", self.owner_id)
 
     async def event_ready(self) -> None:
-        LOGGER.info("Bot is ready! Logged in as %s (ID: %s)", self.nick, self.bot_id)
+        LOGGER.info("Bot is ready! Logged in as %s (ID: %s)", self.owner_id, self.bot_id)
 
     async def event_oauth_authorized(self, payload: UserTokenPayload) -> None:
         """Called when a user authorizes the bot via OAuth."""
         LOGGER.info("OAuth token authorized for user ID: %s", payload.user_id)
         await super().event_oauth_authorized(payload)
 
+
+class GeneralCommands(commands.Component):
+    @commands.command()
+    async def hi(self, ctx: commands.Context[Bot]) -> None:
+        """Command that replies to the invoker with Hi <name>!
+
+        !hi
+        """
+        LOGGER.info("Logged in as: %s", ctx)
+        await ctx.reply(f"Hi {ctx.chatter}!")
+
+    @commands.command()
+    async def say(self, ctx: commands.Context[Bot], *, message: str) -> None:
+        """Command which repeats what the invoker sends.
+
+        !say <message>
+        """
+        LOGGER.info("Logged in as: %s", ctx)
+        await ctx.send(message)
     @commands.command()
     async def hello(self, ctx: commands.Context) -> None:
         """Greet the user who invoked the command."""
